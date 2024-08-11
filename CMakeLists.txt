@@ -4,7 +4,7 @@ project(Cpptracer VERSION 1.0
                   DESCRIPTION "Raytracer in C++"
                   LANGUAGES CXX)
 
-add_executable(tracer main.cpp src/vec3.cpp src/color.cpp)
+add_executable(tracer main.cpp src/vec3.cpp src/color.cpp src/ray.cpp)
 
 target_include_directories(tracer PUBLIC include)
 

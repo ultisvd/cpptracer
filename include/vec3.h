@@ -29,7 +29,7 @@ class vec3 {
     fpoint length_squared() const;
 };
 
-using point = vec3;
+using point3 = vec3;
 
 inline std::ostream &operator<<(std::ostream &out, const vec3 &v);
 
@@ -49,6 +49,6 @@ fpoint dot(const vec3 &u, const vec3 &v);
 
 vec3 cross(const vec3 &u, const vec3 &v);
 
-vec3 normalize(const vec3& v);
+vec3 normalize(const vec3 &v);
 
 #endif // !VEC3_H
