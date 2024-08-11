@@ -1,5 +1,5 @@
+#include "include/color.h"
 #include <iostream>
-
 
 struct Image {
     int image_width;
@@ -8,34 +8,32 @@ struct Image {
     Image(int w, int h) : image_width(w), image_height(h) {}
 };
 
-
-
-
-
 int main(int argc, char *argv[]) {
     // if (argc != 1 ) {
     //     std::cout << "Hello, " << argv[1] << '!' << '\n';
     // } else {
     //     std::cout << "Hello, world!" << '\n';
     // }
-    Image img(256, 256);
-    std::cout << "P3\n" << img.image_width << ' ' << img.image_height << "\n255\n";
 
-    for (int j = 0; j < img.image_height; j++) {
-        for (int i = 0; i < img.image_width; i++) {
-            auto r = double(i) / (img.image_width - 1);
-            auto g = double(j) / (img.image_height - 1);
-            auto b = 0.0;
+    Image img(1280, 720);
 
-            int ir = int(255.999 * r);
-            int ig = int(255.999 * g);
-            int ib = int(255.999 * b);
+    auto image_width = img.image_width;
+    auto image_height = img.image_height;
 
-            std::cout << ir << ' ' << ig << ' '  << ib << '\n';
+    std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
+    for (int y = 0; y < image_height; y++) {
+        std::clog << "\rScanlines remaining: " << (image_height - y) << ' '
+                  << std::flush;
+
+        for (int x = 0; x < image_width; x++) {
+            // red increases to the right
+            // green increases to the bottom
+            auto color = Color(fpoint(x) / (image_width - 1),
+                               fpoint(y) / (image_height - 1), 0);
+            write_color(std::cout, color);
         }
     }
-
-
+    std::clog << "\rDone                                \n";
 
     return 0;
 }
