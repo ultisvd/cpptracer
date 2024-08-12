@@ -9,7 +9,7 @@ private:
 public: 
     Sphere(const point3& center, fpoint radius) : center(center), radius(std::fmax(0, radius)) {}
     
-    std::optional<Hit_record> hit(const Ray& ray, fpoint ray_tmin, fpoint ray_tmax) const override {
+    bool hit(const Ray& ray, Interval ray_t, Hit_record& rec) const override {
         // find discriminant
         vec3 circle_origin = center - ray.origin();
         auto a = ray.direction().length_squared();
@@ -17,26 +17,24 @@ public:
         auto c = dot(circle_origin, circle_origin) - radius * radius;
         auto discriminant = h * h - a * c;
         if (discriminant < 0) {
-            return std::nullopt;
+            return false;
         }
         auto sqrtd = std::sqrt(discriminant);
 
         // find suitable root from the quadratic (h +- sqrt(discriminant) / a)
         auto root = (h - sqrtd) / a;
-        if (root <= ray_tmin || root >= ray_tmax) {
+        if (root <= ray_t.min || root >= ray_t.max) {
             root = (h + sqrtd) / a;
-            if (root <= ray_tmin || root >= ray_tmax){
-                return std::nullopt;
+            if (root <= ray_t.min || root >= ray_t.max){
+                return false;
             }
         }
 
-        Hit_record rec {
-            .p = ray.at(root),
-            .t = root,
-        };
+        rec.p = ray.at(root);
+        rec.t = root;
         vec3 outward_normal = (rec.p - center) / radius;
         rec.set_face_normal(ray, outward_normal);
-        return rec;
+        return true;
     }
 };
 

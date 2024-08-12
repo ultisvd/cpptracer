@@ -1,7 +1,8 @@
 #ifndef HITTABLE_LIST_H
 #define HITTABLE_LIST_H
 
-#include "hittable.h" 
+#include "hittable.h"
+#include "sphere.h"
 #include <memory>
 #include <vector>
 
@@ -9,35 +10,32 @@ using std::make_shared;
 using std::shared_ptr;
 using std::vector;
 
-class Hittable_list : public Hittable {
-public:
-    vector<shared_ptr<Hittable>> objects;
+class Hittable_list{
+  public:
+    vector<Sphere> objects;
 
     Hittable_list() {}
-    Hittable_list(shared_ptr<Hittable> object) {add(object);}
 
-    void clear() {objects.clear();}
+    void clear() { objects.clear(); }
 
-    void add(shared_ptr<Hittable> object) {
-        objects.push_back(object);
-    }
+    void add(Sphere object) { objects.push_back(object); }
 
-    std::optional<Hit_record> hit(const Ray& ray, fpoint ray_tmin, fpoint ray_tmax) const override {
-        auto closest_so_far = ray_tmax;
+    bool hit(const Ray &ray, Interval ray_t, Hit_record &rec) const {
+        auto closest_so_far = ray_t.max;
+        bool hit_anything = false;
+        Hit_record temp_rec;
 
-        for (const auto object : objects) {
-            auto ray_hit = hit(ray, ray_tmin, ray_tmax);
-            if (ray_hit){
-                auto rec = ray_hit.value();
+        for (const auto &object : objects) {
+            if (object.hit(ray, Interval(ray_t.min, closest_so_far),
+                            temp_rec)) {
+                rec = temp_rec;
                 closest_so_far = rec.t;
-                return rec;
+                hit_anything = true;
             }
         }
-        
-        return std::nullopt;
+
+        return hit_anything;
     };
 };
 
-
 #endif // !HITTABLE_LIST_H
-

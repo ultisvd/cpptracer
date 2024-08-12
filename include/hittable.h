@@ -1,8 +1,8 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
+#include "interval.h"
 #include "ray.h"
-#include <optional>
 
 class Hit_record {
 public:
@@ -20,7 +20,7 @@ public:
 class Hittable {
 public: 
     virtual ~Hittable() = default;
-    virtual std::optional<Hit_record> hit(const Ray& r, fpoint ray_tmin, fpoint ray_tmax) const = 0;
+    virtual bool hit(const Ray& r, Interval ray_t, Hit_record& rec) const = 0;
 };
 
 #endif // !HITTABLE_H

@@ -3,8 +3,7 @@
 
 #include <cmath>
 #include <iostream>
-
-using fpoint = float;
+#include "declarations.h"
 
 class vec3 {
   public:
@@ -27,6 +26,8 @@ class vec3 {
     fpoint length() const;
 
     fpoint length_squared() const;
+
+
 };
 
 using point3 = vec3;
@@ -51,4 +52,25 @@ vec3 cross(const vec3 &u, const vec3 &v);
 
 vec3 normalize(const vec3 &v);
 
+vec3 vec3_random();
+vec3 vec3_random(fpoint min, fpoint max);
+inline vec3 random_in_unit_sphere() {
+    while (true) {
+        auto p = vec3_random(-1,1);
+        if (p.length_squared() < 1)
+            return p;
+    }
+}
+
+inline vec3 random_unit_vector() {
+    return normalize(random_in_unit_sphere());
+}
+
+inline vec3 random_on_hemisphere(const vec3& normal) {
+    vec3 on_unit_sphere = random_unit_vector();
+    if (dot(on_unit_sphere, normal) > 0.0)  
+        return on_unit_sphere;
+    else  
+        return -on_unit_sphere;
+}
 #endif // !VEC3_H
