@@ -8,6 +8,7 @@
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <cstdint>
+#include <sys/types.h>
 
 class Camera {
   public:
@@ -20,7 +21,7 @@ class Camera {
 
     int get_height() const { return image_height; }
 
-    void render(const Hittable_list &world, SDL_Surface *surface) {
+    void render(const Hittable_list &world, SDL_Texture *texture, SDL_PixelFormat *format) {
         Color p_col(0, 0, 0);
         for (int sample = 0; sample < samples_per_pixel; sample++) {
             Ray ray = get_ray(cur_x, cur_y);
@@ -31,15 +32,17 @@ class Camera {
         uint8_t gbyte = uint8_t(255.999 * p_col.y());
         uint8_t bbyte = uint8_t(255.999 * p_col.z());
 
-        uint32_t* p = (uint32_t*)surface->pixels;
-        int offset = (surface->pitch / sizeof(uint32_t)) * cur_y + cur_x;
-        *(p + offset) = SDL_MapRGBA(surface->format, rbyte, gbyte, bbyte, 255);
-
-        // SDL_SetRenderDrawColor(renderer, rbyte, gbyte, bbyte, 255);
-        // SDL_RenderDrawPoint(renderer, cur_x, cur_y);
+        void *pixels;
+        int pitch;
+        SDL_LockTexture(texture, NULL, &pixels, &pitch);
+        uint32_t *dst = (uint32_t *)(pixels);
+        uint32_t offset = ((uint32_t)pitch / sizeof(uint32_t)) * (uint32_t)cur_y + (uint32_t)cur_x;
+        *(dst + offset) = SDL_MapRGBA(format, rbyte, gbyte, bbyte, 255);
+        SDL_UnlockTexture(texture);
         cur_x = (cur_x + 1) % image_width;
         if (cur_x == 0)
             cur_y++;
+        cur_y %= image_height;
     }
 
     void init() {
