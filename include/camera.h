@@ -5,7 +5,9 @@
 #include "hittable_list.h"
 #include "rtweekend.h"
 #include "vec3.h"
-#include <array>
+#include <SDL2/SDL_pixels.h>
+#include <SDL2/SDL_render.h>
+#include <cstdint>
 
 class Camera {
   public:
@@ -13,40 +15,32 @@ class Camera {
     fpoint aspect_ratio = 16.0 / 9.0;
     int samples_per_pixel = 32;
     int max_depth = 10;
+    int cur_x = 0;
+    int cur_y = 0;
 
-    void render(const Hittable_list &world) {
-        init();
-        vector<vec3> colors;
-        colors.reserve(40000000);
+    int get_height() const { return image_height; }
 
-        std::cout << "P3\n" << image_width << ' ' << image_height << "\n255\n";
-        for (int y = 0; y < image_height; y++) {
-            for (int x = 0; x < image_width; x += 8) {
-                for (int i = 0; i < 8; i++) {
-                    Color pixel_color(0, 0, 0);
-                    for (int sample = 0; sample < samples_per_pixel; sample++) {
-                        Ray ray = get_ray(x+i, y);
-                        pixel_color += ray_color(ray, max_depth, world);
-                    }
-                    write_color(colors, pixel_color * pixel_samples_scale);
-                }
-            }
+    void render(const Hittable_list &world, SDL_Surface *surface) {
+        Color p_col(0, 0, 0);
+        for (int sample = 0; sample < samples_per_pixel; sample++) {
+            Ray ray = get_ray(cur_x, cur_y);
+            p_col += ray_color(ray, max_depth, world);
         }
-        std::clog << "\rDone                                \n";
-        for (auto &color : colors) {
-            std::cout << int(color.e[0]) << ' ' << int(color.e[1]) << ' '
-                      << int(color.e[2]) << '\n';
-        }
+        p_col *= pixel_samples_scale;
+        uint8_t rbyte = uint8_t(255.999 * p_col.x());
+        uint8_t gbyte = uint8_t(255.999 * p_col.y());
+        uint8_t bbyte = uint8_t(255.999 * p_col.z());
+
+        uint32_t* p = (uint32_t*)surface->pixels;
+        int offset = (surface->pitch / sizeof(uint32_t)) * cur_y + cur_x;
+        *(p + offset) = SDL_MapRGBA(surface->format, rbyte, gbyte, bbyte, 255);
+
+        // SDL_SetRenderDrawColor(renderer, rbyte, gbyte, bbyte, 255);
+        // SDL_RenderDrawPoint(renderer, cur_x, cur_y);
+        cur_x = (cur_x + 1) % image_width;
+        if (cur_x == 0)
+            cur_y++;
     }
-
-  private:
-    int image_height;
-    fpoint vfov = 120;
-    double pixel_samples_scale;
-    point3 center;
-    point3 first_pixel;
-    vec3 pixel_delta_u;
-    vec3 pixel_delta_v;
 
     void init() {
         image_height = int(image_width / aspect_ratio);
@@ -71,6 +65,15 @@ class Camera {
             center - vec3(0, 0, focal_length) - viewport_u / 2 - viewport_v / 2;
         first_pixel = viewport_upleft + 0.5 * (pixel_delta_u + pixel_delta_v);
     }
+
+  private:
+    int image_height;
+    fpoint vfov = 120;
+    double pixel_samples_scale;
+    point3 center;
+    point3 first_pixel;
+    vec3 pixel_delta_u;
+    vec3 pixel_delta_v;
 
     vec3 sample_square() const {
         return vec3(random_fpoint() - 0.5, random_fpoint() - 0.5, 0);
