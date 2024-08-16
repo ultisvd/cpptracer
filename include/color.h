@@ -1,13 +1,15 @@
 #ifndef COLOR_H
 #define COLOR_H
 
-#include "vec3.h"
 #include <SDL2/SDL_render.h>
-#include <vector>
+#include <tuple>
+#include "declarations.h"
+#include "vec3.h"
 
 using Color = vec3;
+using byte_colors = std::tuple<uint8_t, uint8_t, uint8_t>;
 
-void write_color(SDL_Texture &texture, const Color &pixel_color);
+byte_colors color_to_bytes(const Color &color);
 
 
-#endif // !COLOR_H
+#endif  // !COLOR_H

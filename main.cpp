@@ -2,6 +2,8 @@
 #include "camera.h"
 #include "hittable_list.h"
 #include "sphere.h"
+
+// TODO: MOVE TO RAYLIB
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <SDL2/SDL_stdinc.h>
@@ -19,10 +21,11 @@ int main() {
     world.add(Sphere(point3(0, -100.5, -1), 100));
 
     Camera cam;
-    cam.max_depth = 4;
+    cam.max_depth = 256;
     cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 640;
-    cam.samples_per_pixel = 32;
+    cam.image_width = 1920;
+    cam.samples_per_pixel = 1024;
+    cam.lookfrom = point3(-0.4,0.3,0);
     cam.init();
 
 
@@ -32,7 +35,7 @@ int main() {
     }
     SDL_Window *window = SDL_CreateWindow(
         "Rays", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-        cam.image_width, cam.get_height(), SDL_WINDOW_SHOWN);
+        (int)cam.image_width, (int)cam.get_height(), SDL_WINDOW_SHOWN);
 
     if (!window) {
         std::clog << "Couldn't create a window. \n";
@@ -43,7 +46,7 @@ int main() {
         SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_Texture *rayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
                                              SDL_TEXTUREACCESS_STREAMING,
-                                             cam.image_width, cam.get_height());
+                                             (int)cam.image_width, (int)cam.get_height());
 
     if (!renderer) {
         std::clog << "Couldn't create a renderer. \n";
@@ -62,7 +65,7 @@ int main() {
                 break;
             }
         }
-        cam.render(world, rayTexture, format);
+        cam.render_frame(world, rayTexture, format);
 
         SDL_RenderClear(renderer);
         SDL_RenderCopy(renderer, rayTexture, NULL, NULL);
