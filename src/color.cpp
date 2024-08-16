@@ -1,6 +1,6 @@
 #include "color.h"
-#include "rtweekend.h"
 #include <SDL2/SDL_render.h>
+#include "rtweekend.h"
 
 byte_colors color_to_bytes(const Color &color) {
     uint8_t rbyte = uint8_t(255.999 * color.x());

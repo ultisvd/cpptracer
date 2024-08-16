@@ -18,7 +18,7 @@ struct pixel_buffer {
     void init(size_t width, size_t height) {
         pixels.reserve(width * height * sizeof(Color));
         for (size_t i = 0; i < pixels.capacity(); i++) {
-            pixels.push_back(Color(0,0,0));
+            pixels.push_back(Color(0, 0, 0));
         }
     }
 };

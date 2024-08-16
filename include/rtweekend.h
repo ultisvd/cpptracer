@@ -10,10 +10,10 @@
 #include <vector>
 
 #include "color.h"
-#include "ray.h"
-#include "vec3.h"
 #include "declarations.h"
 #include "interval.h"
+#include "ray.h"
+#include "vec3.h"
 
 // C++ Std Usings
 
@@ -22,7 +22,6 @@ using std::shared_ptr;
 using std::vector;
 
 // Constants
-
 
 // Utility Functions
 
@@ -39,6 +38,5 @@ inline fpoint random_fpoint() {
 inline fpoint random_fpoint(fpoint min, fpoint max) {
     return min + (max - min) * random_fpoint();
 }
-
 
 #endif

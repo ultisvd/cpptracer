@@ -6,7 +6,7 @@
 #include "declarations.h"
 
 class vec3 {
-  public:
+   public:
     fpoint e[3];
     vec3() : e{0, 0, 0} {}
     vec3(fpoint e0, fpoint e1, fpoint e2) : e{e0, e1, e2} {}
@@ -26,8 +26,6 @@ class vec3 {
     fpoint length() const;
 
     fpoint length_squared() const;
-
-
 };
 
 using point3 = vec3;
@@ -56,7 +54,7 @@ vec3 vec3_random();
 vec3 vec3_random(fpoint min, fpoint max);
 inline vec3 random_in_unit_sphere() {
     while (true) {
-        auto p = vec3_random(-1,1);
+        auto p = vec3_random(-1, 1);
         if (p.length_squared() < 1)
             return p;
     }
@@ -66,11 +64,11 @@ inline vec3 random_unit_vector() {
     return normalize(random_in_unit_sphere());
 }
 
-inline vec3 random_on_hemisphere(const vec3& normal) {
+inline vec3 random_on_hemisphere(const vec3 &normal) {
     vec3 on_unit_sphere = random_unit_vector();
-    if (dot(on_unit_sphere, normal) > 0.0)  
+    if (dot(on_unit_sphere, normal) > 0.0)
         return on_unit_sphere;
-    else  
+    else
         return -on_unit_sphere;
 }
-#endif // !VEC3_H
+#endif  // !VEC3_H

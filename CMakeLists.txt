@@ -9,6 +9,7 @@ project(
 add_executable(tracer main.cpp src/vec3.cpp src/color.cpp src/ray.cpp)
 
 find_package(SDL2 REQUIRED)
+find_package(raylib REQUIRED)
 
 set(CMAKE_CXX_FLAGS
     "-std=c++20 -Wall -Wextra -Wpedantic -Wconversion -fno-exceptions -O3")
@@ -18,3 +19,4 @@ target_include_directories(tracer PUBLIC include)
 set_target_properties(tracer PROPERTIES CXX_STANDARD 23)
 
 target_link_libraries(tracer SDL2)
+target_link_libraries(tracer raylib)

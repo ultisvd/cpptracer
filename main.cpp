@@ -12,12 +12,12 @@
 int main() {
     Hittable_list world;
 
-    world.add(Sphere(point3(0, 0, -1.3), 0.5));
-    world.add(Sphere(point3(1, 0, -1.3), 0.5));
-    world.add(Sphere(point3(-2, 0, -1.5), 0.5));
-    world.add(Sphere(point3(2, 0, -1.5), 0.5));
-    world.add(Sphere(point3(1.4, -0.4, -0.8), 0.1));
-    world.add(Sphere(point3(-0.8, -0.4, -0.6), 0.1));
+    world.add(Sphere(point3(0, 0, -1.3), 0.51));
+    world.add(Sphere(point3(1, 0, -1.3), 0.51));
+    world.add(Sphere(point3(-2, 0, -1.5), 0.51));
+    world.add(Sphere(point3(2, 0, -1.5), 0.51));
+    world.add(Sphere(point3(1.4, -0.4, -0.8), 0.11));
+    world.add(Sphere(point3(-0.8, -0.4, -0.6), 0.11));
     world.add(Sphere(point3(0, -100.5, -1), 100));
 
     Camera cam;
@@ -25,9 +25,9 @@ int main() {
     cam.aspect_ratio = 16.0 / 9.0;
     cam.image_width = 1920;
     cam.samples_per_pixel = 1024;
-    cam.lookfrom = point3(-0.4,0.3,0);
+    cam.lookfrom = point3(-0.4, -0.35, 0);
+    cam.lookat = point3(0, 0, -0.9);
     cam.init();
-
 
     if (SDL_Init(SDL_INIT_EVERYTHING)) {
         std::clog << "Epic SDL fail!" << '\n';
@@ -44,9 +44,9 @@ int main() {
 
     SDL_Renderer *renderer =
         SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    SDL_Texture *rayTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888,
-                                             SDL_TEXTUREACCESS_STREAMING,
-                                             (int)cam.image_width, (int)cam.get_height());
+    SDL_Texture *rayTexture = SDL_CreateTexture(
+        renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
+        (int)cam.image_width, (int)cam.get_height());
 
     if (!renderer) {
         std::clog << "Couldn't create a renderer. \n";
@@ -60,9 +60,9 @@ int main() {
     while (!quit) {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
-            case SDL_QUIT:
-                quit = true;
-                break;
+                case SDL_QUIT:
+                    quit = true;
+                    break;
             }
         }
         cam.render_frame(world, rayTexture, format);

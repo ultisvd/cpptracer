@@ -3,13 +3,15 @@
 
 #include "hittable.h"
 class Sphere : public Hittable {
-private:
+   private:
     point3 center;
     fpoint radius;
-public: 
-    Sphere(const point3& center, fpoint radius) : center(center), radius(std::fmax(0, radius)) {}
-    
-    bool hit(const Ray& ray, Interval ray_t, Hit_record& rec) const override {
+
+   public:
+    Sphere(const point3 &center, fpoint radius)
+        : center(center), radius(std::fmax(0, radius)) {}
+
+    bool hit(const Ray &ray, Interval ray_t, Hit_record &rec) const override {
         // find discriminant
         vec3 circle_origin = center - ray.origin();
         auto a = ray.direction().length_squared();
@@ -25,7 +27,7 @@ public:
         auto root = (h - sqrtd) / a;
         if (root <= ray_t.min || root >= ray_t.max) {
             root = (h + sqrtd) / a;
-            if (root <= ray_t.min || root >= ray_t.max){
+            if (root <= ray_t.min || root >= ray_t.max) {
                 return false;
             }
         }
@@ -38,4 +40,4 @@ public:
     }
 };
 
-#endif // !SPHERE_H
+#endif  // !SPHERE_H

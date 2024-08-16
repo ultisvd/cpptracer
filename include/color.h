@@ -11,5 +11,4 @@ using byte_colors = std::tuple<uint8_t, uint8_t, uint8_t>;
 
 byte_colors color_to_bytes(const Color &color);
 
-
 #endif  // !COLOR_H
