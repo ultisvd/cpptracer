@@ -6,9 +6,9 @@
 #include "declarations.h"
 #include "vec3.h"
 
-using Color = vec3;
+using Col = vec3;
 using byte_colors = std::tuple<uint8_t, uint8_t, uint8_t>;
 
-byte_colors color_to_bytes(const Color &color);
+byte_colors color_to_bytes(const Col &color);
 
 #endif  // !COLOR_H

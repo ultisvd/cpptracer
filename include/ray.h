@@ -2,14 +2,14 @@
 #define RAY_H
 
 #include "vec3.h"
-class Ray {
+class my_Ray {
    private:
     point3 orig;
     vec3 dir;
 
    public:
-    Ray() {}
-    Ray(const point3 &origin, const vec3 &direction)
+    my_Ray() {}
+    my_Ray(const point3 &origin, const vec3 &direction)
         : orig(origin), dir(direction) {}
 
     const point3 &origin() const;

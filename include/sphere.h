@@ -11,7 +11,7 @@ class Sphere : public Hittable {
     Sphere(const point3 &center, fpoint radius)
         : center(center), radius(std::fmax(0, radius)) {}
 
-    bool hit(const Ray &ray, Interval ray_t, Hit_record &rec) const override {
+    bool hit(const my_Ray &ray, Interval ray_t, Hit_record &rec) const override {
         // find discriminant
         vec3 circle_origin = center - ray.origin();
         auto a = ray.direction().length_squared();

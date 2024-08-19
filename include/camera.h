@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
+#include <raylib.h>
 #include <sys/types.h>
 #include <cstdint>
 #include "color.h"
@@ -12,18 +13,18 @@
 #include "vec3.h"
 
 struct pixel_buffer {
-    vector<Color> pixels;
+    vector<Col> pixels;
     int sample_amount;
     size_t width, height;
     void init(size_t width, size_t height) {
-        pixels.reserve(width * height * sizeof(Color));
+        pixels.reserve(width * height * sizeof(Col));
         for (size_t i = 0; i < pixels.capacity(); i++) {
-            pixels.push_back(Color(0, 0, 0));
+            pixels.push_back(Col(0, 0, 0));
         }
     }
 };
 
-class Camera {
+class TracingCamera {
    public:
     size_t image_width = 300;
     fpoint aspect_ratio = 16.0 / 9.0;
@@ -36,15 +37,13 @@ class Camera {
 
     size_t get_height() const { return image_height; }
 
-    void render_frame(const Hittable_list &world,
-                      SDL_Texture *texture,
-                      SDL_PixelFormat *format) {
+    void render_frame(const Hittable_list &world, RenderTexture2D &texture) {
         if (buffer.sample_amount < 1) {
             buffer.sample_amount++;
             for (size_t y = 0; y < image_height; y++) {
                 for (size_t x = 0; x < image_width; x++) {
-                    Color p_col(0, 0, 0);
-                    Ray ray = get_ray(x, y);
+                    Col p_col(0, 0, 0);
+                    my_Ray ray = get_ray(x, y);
                     p_col = ray_color(ray, max_depth, world);
                     buffer.pixels[y * image_width + x] = p_col;
                 }
@@ -54,10 +53,10 @@ class Camera {
                 buffer.sample_amount++;
                 for (size_t y = 0; y < image_height; y++) {
                     for (size_t x = 0; x < image_width; x++) {
-                        Color p_col(0, 0, 0);
-                        Ray ray = get_ray(x, y);
+                        Col p_col(0, 0, 0);
+                        my_Ray ray = get_ray(x, y);
                         p_col = ray_color(ray, max_depth, world);
-                        Color avg = buffer.pixels[y * image_width + x];
+                        Col avg = buffer.pixels[y * image_width + x];
                         avg = avg - (avg / buffer.sample_amount);
                         avg += p_col / buffer.sample_amount;
                         buffer.pixels[y * image_width + x] = avg;
@@ -65,21 +64,29 @@ class Camera {
                 }
             }
         }
-        uint32_t *dst;
-        int pitch;
-        void *pixels_ptr;
-        SDL_LockTexture(texture, NULL, &pixels_ptr, &pitch);
+        BeginTextureMode(texture);
         for (size_t row = 0; row < image_height; row++) {
-            dst = (uint32_t *)((uint8_t *)pixels_ptr + row * (size_t)pitch);
             for (size_t col = 0; col < image_width; col++) {
                 const auto [rbyte, gbyte, bbyte] =
                     color_to_bytes(buffer.pixels[image_width * row + col]);
-                if (buffer.sample_amount <= samples_per_pixel) {
-                }
-                *dst++ = SDL_MapRGBA(format, rbyte, gbyte, bbyte, 255);
+                Color color{rbyte, gbyte, bbyte, 255};
+                DrawPixel(col, row, color);
             }
         }
-        SDL_UnlockTexture(texture);
+        EndTextureMode();
+
+        // SDL_LockTexture(texture, NULL, &pixels_ptr, &pitch);
+        // for (size_t row = 0; row < image_height; row++) {
+        //     dst = (uint32_t *)((uint8_t *)pixels_ptr + row * (size_t)pitch);
+        //     for (size_t col = 0; col < image_width; col++) {
+        //         const auto [rbyte, gbyte, bbyte] =
+        //             color_to_bytes(buffer.pixels[image_width * row + col]);
+        //         if (buffer.sample_amount <= samples_per_pixel) {
+        //         }
+        //         *dst++ = SDL_MapRGBA(format, rbyte, gbyte, bbyte, 255);
+        //     }
+        // }
+        // SDL_UnlockTexture(texture);
     }
 
     void init() {
@@ -125,31 +132,31 @@ class Camera {
         return vec3(random_fpoint() - 0.5, random_fpoint() - 0.5, 0);
     }
 
-    Ray get_ray(size_t x, size_t y) const {
+    my_Ray get_ray(size_t x, size_t y) const {
         auto offset = sample_square();
         auto pixel_sample = first_pixel +
                             (((fpoint)x + offset.x()) * pixel_delta_u) +
                             (((fpoint)y + offset.y()) * pixel_delta_v);
         auto ray_origin = center;
         auto ray_direction = pixel_sample - ray_origin;
-        return Ray(ray_origin, ray_direction);
+        return my_Ray(ray_origin, ray_direction);
     }
 
-    Color ray_color(const Ray &ray,
-                    int depth,
-                    const Hittable_list &world) const {
+    Col ray_color(const my_Ray &ray,
+                  int depth,
+                  const Hittable_list &world) const {
         if (depth <= 0) {
-            return Color(0, 0, 0);
+            return Col(0, 0, 0);
         }
         Hit_record rec;
         if (world.hit(ray, Interval(0.001, infinity), rec)) {
             vec3 direction = random_on_hemisphere(rec.normal);
-            return 0.5 * ray_color(Ray(rec.p, direction), depth - 1, world);
+            return 0.5 * ray_color(my_Ray(rec.p, direction), depth - 1, world);
         }
 
         vec3 unit_dir = normalize(ray.direction());
         fpoint a = 0.5 * (unit_dir.y() + 1.0);
-        return (1.0 - a) * Color(1.0, 1.0, 1.0) + a * Color(0.5, 0.7, 1.0);
+        return (1.0 - a) * Col(1.0, 1.0, 1.0) + a * Col(0.5, 0.7, 1.0);
     }
 };
 

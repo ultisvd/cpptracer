@@ -10,7 +10,7 @@ class Hit_record {
     fpoint t;
     vec3 normal;
     bool front_face;
-    void set_face_normal(const Ray &r, const vec3 &outward_normal) {
+    void set_face_normal(const my_Ray &r, const vec3 &outward_normal) {
         // outward_normal is normalized
         front_face = dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
@@ -20,7 +20,7 @@ class Hit_record {
 class Hittable {
    public:
     virtual ~Hittable() = default;
-    virtual bool hit(const Ray &r, Interval ray_t, Hit_record &rec) const = 0;
+    virtual bool hit(const my_Ray &r, Interval ray_t, Hit_record &rec) const = 0;
 };
 
 #endif  // !HITTABLE_H

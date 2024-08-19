@@ -20,7 +20,7 @@ class Hittable_list {
 
     void add(Sphere object) { objects.push_back(object); }
 
-    bool hit(const Ray &ray, Interval ray_t, Hit_record &rec) const {
+    bool hit(const my_Ray &ray, Interval ray_t, Hit_record &rec) const {
         auto closest_so_far = ray_t.max;
         bool hit_anything = false;
         Hit_record temp_rec;
