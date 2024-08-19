@@ -4,11 +4,6 @@
 #include "raylib.h"
 #include "sphere.h"
 
-// TODO: MOVE TO RAYLIB
-// #include "SDL2/SDL.h"
-// #include <SDL2/SDL_pixels.h>
-// #include <SDL2/SDL_render.h>
-// #include <SDL2/SDL_stdinc.h>
 
 int main() {
     Hittable_list world;
