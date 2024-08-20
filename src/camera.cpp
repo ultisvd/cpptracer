@@ -62,7 +62,7 @@ void TracingCamera::recalculate_camera() {
                                      (float)image_height, nearClip, farClip);
     inverseProjection = glm::inverse(projection);
 
-    view = glm::lookAt(lookfrom, lookat, vup);
+    view = glm::lookAt(lookfrom, lookfrom + lookat, vup);
     inverseView = glm::inverse(view);
     rayDirections.resize(image_width * image_height);
 
@@ -83,7 +83,7 @@ void TracingCamera::recalculate_camera() {
 }
 
 void TracingCamera::init() {
-    image_height = (size_t)((fpoint)image_width / (fpoint)aspect_ratio);
+    image_height = (size_t)((float)image_width / (float)aspect_ratio);
     image_height = (image_height < 1) ? 1 : image_height;
     buffer.init(image_width, image_height);
     bytes.reserve(image_width * image_height);
@@ -123,9 +123,9 @@ void TracingCamera::init() {
 
             ray.orig = rec.hitPoint + rec.normal * 0.0001f;
             glm::vec3 rand;
-            rand.x = random_fpoint(-sphere.radius, sphere.radius);
-            rand.y = random_fpoint(-sphere.radius, sphere.radius);
-            rand.z = random_fpoint(-sphere.radius, sphere.radius);
+            rand.x = random_float(-sphere.radius, sphere.radius);
+            rand.y = random_float(-sphere.radius, sphere.radius);
+            rand.z = random_float(-sphere.radius, sphere.radius);
             ray.dir = glm::reflect(
                 ray.dir, rec.normal + sphere.roughness *
                                           rand);

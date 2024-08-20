@@ -35,7 +35,7 @@ struct pixel_buffer {
 class TracingCamera {
    public:
     size_t image_width;
-    fpoint aspect_ratio;
+    float aspect_ratio;
     int samples_per_pixel;
     int max_depth;
     pixel_buffer buffer;
@@ -61,9 +61,9 @@ class TracingCamera {
 
    private:
     size_t image_height;
-    fpoint vfov = 45;
-    fpoint nearClip = 0.1f;
-    fpoint farClip = 100.0f;
+    float vfov = 90;
+    float nearClip = 0.1f;
+    float farClip = 100.0f;
     glm::mat4 projection{1.0f};
     glm::mat4 view{1.0f};
     glm::mat4 inverseProjection{1.0f};

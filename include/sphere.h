@@ -8,9 +8,9 @@ class Sphere {
    public:
     glm::vec3 center;
     glm::vec3 color;
-    fpoint radius;
-    fpoint roughness;
-    Sphere(const glm::vec3 &center, fpoint radius, glm::vec3 color, fpoint roughness)
+    float radius;
+    float roughness;
+    Sphere(const glm::vec3 &center, float radius, glm::vec3 color, float roughness)
         : center(center), color(color), radius(std::fmax(0.f, radius)), roughness(roughness) {}
 };
 

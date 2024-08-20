@@ -5,18 +5,18 @@
 
 class Interval {
    public:
-    fpoint min, max;
+    float min, max;
     Interval() : min(+infinity), max(-infinity) {}
 
-    Interval(fpoint min, fpoint max) : min(min), max(max) {}
+    Interval(float min, float max) : min(min), max(max) {}
 
-    fpoint size() const { return max - min; }
+    float size() const { return max - min; }
 
-    bool contains(fpoint x) const { return min <= x && x <= max; }
+    bool contains(float x) const { return min <= x && x <= max; }
 
-    bool surrounds(fpoint x) const { return min < x && x < max; }
+    bool surrounds(float x) const { return min < x && x < max; }
 
-    fpoint clamp(fpoint x) const {
+    float clamp(float x) const {
         if (x < min)
             return min;
         if (x > max)

@@ -8,7 +8,7 @@
 
 class Hit_record {
    public:
-    fpoint distance;
+    float distance;
     glm::vec3 hitPoint;
     glm::vec3 normal;
     size_t index;

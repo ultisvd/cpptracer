@@ -12,7 +12,7 @@ class my_Ray {
         : orig(origin), dir(direction) {}
 
 
-    glm::vec3 const at(fpoint t) const;
+    glm::vec3 const at(float t) const;
 };
 
 #endif  // !RAY_H

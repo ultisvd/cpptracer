@@ -28,20 +28,20 @@ class Hittable_list {
     [[nodiscard]]
     Hit_record hit(my_Ray &ray) const {
         size_t sphereIdx = UINT32_MAX;
-        fpoint distance = std::numeric_limits<float>::max();
+        float distance = std::numeric_limits<float>::max();
         for (size_t i = 0; i < objects.size(); i++) {
             const Sphere &sphere = objects[i];
             glm::vec3 origin = ray.orig - sphere.center;
 
-            fpoint a = glm::dot(ray.dir, ray.dir);
-            fpoint b = 2.0f * glm::dot(origin, ray.dir);
-            fpoint c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
+            float a = glm::dot(ray.dir, ray.dir);
+            float b = 2.0f * glm::dot(origin, ray.dir);
+            float c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
 
-            fpoint discriminant = b * b - 4.0f * a * c;
+            float discriminant = b * b - 4.0f * a * c;
             if (discriminant < 0.0f)
                 continue;
 
-            fpoint closestHit = (-b - glm::sqrt(discriminant)) / (2.0f * a);
+            float closestHit = (-b - glm::sqrt(discriminant)) / (2.0f * a);
             if (closestHit > 0.0f && closestHit < distance) {
                 distance = closestHit;
                 sphereIdx = i;
@@ -55,7 +55,7 @@ class Hittable_list {
         return ClosestHit(ray, distance, sphereIdx);
     };
 
-    Hit_record ClosestHit(const my_Ray &ray, fpoint distance, size_t index) const {
+    Hit_record ClosestHit(const my_Ray &ray, float distance, size_t index) const {
         Hit_record rec;
         rec.distance = distance;
         rec.index = index;

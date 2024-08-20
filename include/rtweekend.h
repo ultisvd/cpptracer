@@ -28,7 +28,7 @@ using std::vector;
 
 // Utility Functions
 
-inline fpoint degrees_to_radians(fpoint degrees) {
+inline float degrees_to_radians(float degrees) {
     return degrees * pi / 180.0f;
 }
 

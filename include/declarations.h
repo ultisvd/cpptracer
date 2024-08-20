@@ -6,9 +6,8 @@
 #include <glm/vec3.hpp>
 #include <tuple>
 
-using fpoint = float;
-const fpoint infinity = std::numeric_limits<fpoint>::infinity();
-const fpoint pi = 3.1415926535897932385f;
+const float infinity = std::numeric_limits<float>::infinity();
+const float pi = 3.1415926535897932385f;
 
 using color_bytes = std::tuple<uint8_t, uint8_t, uint8_t>;
 

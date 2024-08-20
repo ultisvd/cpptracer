@@ -6,13 +6,13 @@
 #include "xoshiro.h"
 #include "declarations.h"
 
-inline fpoint random_fpoint() {
+inline float random_float() {
     uint64_t num = xoshiro_next();
     return (float)num / (float)(RAND_MAX);
 }
 
-inline fpoint random_fpoint(fpoint min, fpoint max) {
-    auto rand_num = random_fpoint();
+inline float random_float(float min, float max) {
+    auto rand_num = random_float();
     return min + (max - min) * rand_num;
 }
 
