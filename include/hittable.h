@@ -1,17 +1,17 @@
 #ifndef HITTABLE_H
 #define HITTABLE_H
 
-#include "interval.h"
-#include "ray.h"
 #include <glm/common.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/geometric.hpp>
+#include "declarations.h"
 
 class Hit_record {
    public:
     fpoint distance;
     glm::vec3 hitPoint;
     glm::vec3 normal;
-    int index;
+    size_t index;
 };
 
 

@@ -1,9 +1,11 @@
 #ifndef HITTABLE_LIST_H
 #define HITTABLE_LIST_H
 
+#include <cstdint>
 #include <glm/common.hpp>
 #include <glm/vec3.hpp>
 #include <limits>
+#include "ray.h"
 #include <memory>
 #include <vector>
 #include "hittable.h"
@@ -25,7 +27,7 @@ class Hittable_list {
 
     [[nodiscard]]
     Hit_record hit(my_Ray &ray) const {
-        int closestSphere = -1;
+        size_t sphereIdx = UINT32_MAX;
         fpoint distance = std::numeric_limits<float>::max();
         for (size_t i = 0; i < objects.size(); i++) {
             const Sphere &sphere = objects[i];
@@ -39,21 +41,21 @@ class Hittable_list {
             if (discriminant < 0.0f)
                 continue;
 
-            fpoint closestT = (-b - glm::sqrt(discriminant) / (2.0f * a));
-            if (closestT > 0.0f && closestT < distance) {
-                distance = closestT;
-                closestSphere = (int)i;
+            fpoint closestHit = (-b - glm::sqrt(discriminant)) / (2.0f * a);
+            if (closestHit > 0.0f && closestHit < distance) {
+                distance = closestHit;
+                sphereIdx = i;
             }
         }
 
-        if (closestSphere < 0) {
+        if (sphereIdx == UINT32_MAX) {
             return Miss();
         }
 
-        return ClosestHit(ray, distance, closestSphere);
+        return ClosestHit(ray, distance, sphereIdx);
     };
 
-    Hit_record ClosestHit(const my_Ray &ray, fpoint distance, int index) const {
+    Hit_record ClosestHit(const my_Ray &ray, fpoint distance, size_t index) const {
         Hit_record rec;
         rec.distance = distance;
         rec.index = index;
@@ -62,7 +64,7 @@ class Hittable_list {
 
         glm::vec3 origin = ray.orig - closestSphere.center;
         rec.hitPoint = origin + ray.dir * distance;
-        rec.normal = glm::normalize(rec.hitPoint);
+        rec.normal = glm::normalize((rec.hitPoint));
         rec.hitPoint += closestSphere.center;
 
         return rec;
