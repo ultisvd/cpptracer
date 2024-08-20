@@ -1,9 +1,9 @@
 #include <climits>
-#include "camera.h"
-#include "hittable_list.h"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include "camera.h"
+#include "hittable_list.h"
 #include "raylib.h"
 #include "sphere.h"
 
@@ -13,22 +13,23 @@ int main() {
 
     Hittable_list world;
 
+    world.add(Sphere(glm::vec3(-1.f, +0.0f, -0.8f), +0.5f, {0.9f, +0.2f, +0.2f},
+                     +0.4f));
+    world.add(Sphere(glm::vec3(+0.0f, +0.0f, -0.8f), +0.5f,
+                     {0.2f, +0.9f, +0.2f}, +0.4f));
+    world.add(Sphere(glm::vec3(+1.0f, +0.0f, -0.8f), +0.5f,
+                     {0.2f, +0.2f, +0.9f}, +0.4f));
+    world.add(Sphere(glm::vec3(+1.f, +0.0f, +2.2f), +0.5f, {0.9f, +0.2f, +0.2f},
+                     +0.4f));
+    world.add(Sphere(glm::vec3(0.0f, +0.0f, +2.2f), +0.5f, {0.2f, +0.9f, +0.2f},
+                     +0.4f));
+    world.add(Sphere(glm::vec3(-1.0f, +0.0f, +2.2f), +0.5f,
+                     {0.2f, +0.2f, +0.9f}, +0.4f));
     world.add(
-        Sphere(glm::vec3(-1.f, +0.0f, -0.8f), +0.5f, {0.9f, +0.2f, +0.2f}, +0.2f));
-    world.add(
-        Sphere(glm::vec3(+0.0f, +0.0f, -0.8f), +0.5f, {0.2f, +0.9f, +0.2f}, +0.2f));
-    world.add(
-        Sphere(glm::vec3(+1.0f, +0.0f, -0.8f), +0.5f, {0.2f, +0.2f, +0.9f}, +0.2f));
-    world.add(
-        Sphere(glm::vec3(+1.f, +0.0f, +2.2f), +0.5f, {0.9f, +0.2f, +0.2f}, +0.2f));
-    world.add(
-        Sphere(glm::vec3(0.0f, +0.0f, +2.2f), +0.5f, {0.2f, +0.9f, +0.2f}, +0.2f));
-    world.add(
-        Sphere(glm::vec3(-1.0f, +0.0f, +2.2f), +0.5f, {0.2f, +0.2f, +0.9f}, +0.2f));
-    world.add(Sphere(glm::vec3(0, -800.5f, -1), 800, {0.3f, +0.3f, +0.6f}, +0.0001f));
+        Sphere(glm::vec3(0, -1000.5f, -1), 1000, {0.3f, +0.3f, +0.6f}, +0.3f));
 
     TracingCamera cam;
-    cam.max_depth = 128;
+    cam.max_depth = 5; 
     cam.aspect_ratio = ASPECT_RATIO;
     cam.image_width = WIDTH;
     cam.samples_per_pixel = 256;
@@ -44,11 +45,13 @@ int main() {
     ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
     Texture2D texture = LoadTextureFromImage(image);
 
-
     while (!WindowShouldClose()) {
         auto fps = GetFPS();
         glm::vec3 right_dir = glm::cross(cam.lookat, cam.vup);
         float cam_speed = 0.1f;
+        if (IsKeyDown(KEY_LEFT_SHIFT)) {
+            cam_speed = 300.0f;
+        }
         if (IsKeyDown(KEY_W)) {
             cam.lookfrom += (cam.lookat * cam_speed);
             cam.recalculate_camera();
@@ -84,8 +87,9 @@ int main() {
             if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
                 mouseDelta.x *= 0.03f;
                 mouseDelta.y *= 0.03f;
-                glm::quat q = glm::normalize(glm::cross(glm::angleAxis(
-                    -mouseDelta.y, right_dir), glm::angleAxis(-mouseDelta.x, cam.vup)));
+                glm::quat q = glm::normalize(
+                    glm::cross(glm::angleAxis(-mouseDelta.y, right_dir),
+                               glm::angleAxis(-mouseDelta.x, cam.vup)));
                 cam.lookat = glm::rotate(q, cam.lookat);
                 cam.recalculate_camera();
                 cam.buffer.reset();

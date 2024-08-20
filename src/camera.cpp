@@ -123,9 +123,9 @@ void TracingCamera::init() {
 
             ray.orig = rec.hitPoint + rec.normal * 0.0001f;
             glm::vec3 rand;
-            rand.x = random_float(-sphere.radius, sphere.radius);
-            rand.y = random_float(-sphere.radius, sphere.radius);
-            rand.z = random_float(-sphere.radius, sphere.radius);
+            rand.x = random_float(-0.5f, 0.5f);
+            rand.y = random_float(-0.5f, 0.5f);
+            rand.z = random_float(-0.5f, 0.5f);
             ray.dir = glm::reflect(
                 ray.dir, rec.normal + sphere.roughness *
                                           rand);
