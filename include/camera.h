@@ -3,160 +3,178 @@
 
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
+#include <omp.h>
 #include <raylib.h>
 #include <sys/types.h>
+#include <cstddef>
 #include <cstdint>
-#include "color.h"
+#include <glm/common.hpp>
+#include <glm/ext/vector_float3.hpp>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/random.hpp>
 #include "hittable.h"
 #include "hittable_list.h"
 #include "rtweekend.h"
-#include "vec3.h"
 
 struct pixel_buffer {
-    vector<Col> pixels;
-    int sample_amount;
+    vector<glm::vec3> pixels;
+    int sample_amount = 1;
     size_t width, height;
     void init(size_t width, size_t height) {
-        pixels.reserve(width * height * sizeof(Col));
+        pixels.reserve(width * height * sizeof(glm::vec3));
         for (size_t i = 0; i < pixels.capacity(); i++) {
-            pixels.push_back(Col(0, 0, 0));
+            pixels.push_back(glm::vec3(0, 0, 0));
+        }
+    }
+    glm::vec3 get_pixel(size_t index) {
+        return pixels[index] / (float)sample_amount;
+    }
+    void reset() {
+        pixels.clear();
+        sample_amount = 0;
+        for (size_t i = 0; i < pixels.capacity(); i++) {
+            pixels.push_back(glm::vec3(0, 0, 0));
         }
     }
 };
 
 class TracingCamera {
    public:
-    size_t image_width = 300;
-    fpoint aspect_ratio = 16.0 / 9.0;
-    int samples_per_pixel = 32;
-    int max_depth = 10;
+    int image_width;
+    fpoint aspect_ratio;
+    int samples_per_pixel;
+    int max_depth;
     pixel_buffer buffer;
-    point3 lookfrom = point3(0, 0, 0);
-    point3 lookat = point3(0, 0, -1);
-    vec3 vup = vec3(0, 1, 0);
+    glm::vec3 lookfrom = glm::vec3(0, 0, 0);
+    glm::vec3 lookat = glm::vec3(0, 0, -1);
+    glm::vec3 vup = glm::vec3(0, 1, 0);
+    std::vector<glm::vec3> rayDirections;
 
-    size_t get_height() const { return image_height; }
+    vector<uint8_t> bytes;
 
-    void render_frame(const Hittable_list &world, RenderTexture2D &texture) {
-        if (buffer.sample_amount < 1) {
-            buffer.sample_amount++;
-            for (size_t y = 0; y < image_height; y++) {
-                for (size_t x = 0; x < image_width; x++) {
-                    Col p_col(0, 0, 0);
-                    my_Ray ray = get_ray(x, y);
-                    p_col = ray_color(ray, max_depth, world);
-                    buffer.pixels[y * image_width + x] = p_col;
-                }
-            }
-        } else {
-            if (buffer.sample_amount < samples_per_pixel) {
-                buffer.sample_amount++;
-                for (size_t y = 0; y < image_height; y++) {
-                    for (size_t x = 0; x < image_width; x++) {
-                        Col p_col(0, 0, 0);
-                        my_Ray ray = get_ray(x, y);
-                        p_col = ray_color(ray, max_depth, world);
-                        Col avg = buffer.pixels[y * image_width + x];
-                        avg = avg - (avg / buffer.sample_amount);
-                        avg += p_col / buffer.sample_amount;
-                        buffer.pixels[y * image_width + x] = avg;
-                    }
-                }
+    [[nodiscard]]
+    int get_height() const {
+        return image_height;
+    }
+
+    void calculate_pixels(pixel_buffer &buffer, const Hittable_list &world) {
+        for (size_t y = 0; y < image_height; y++) {
+            for (size_t x = 0; x < image_width; x++) {
+                glm::vec3 p_col(0, 0, 0);
+                p_col = ray_color(x, y, world);
+                buffer.pixels[y * image_width + x] += p_col;
             }
         }
-        BeginTextureMode(texture);
-        for (size_t row = 0; row < image_height; row++) {
-            for (size_t col = 0; col < image_width; col++) {
+        buffer.sample_amount++;
+        bytes.clear();
+        for (size_t y = 0; y < image_height; y++) {
+            for (size_t x = 0; x < image_width; x++) {
+                auto color = buffer.get_pixel(y * image_width + x);
+                color = glm::clamp(color, glm::vec3(0.0f), glm::vec3(1.0f));
                 const auto [rbyte, gbyte, bbyte] =
-                    color_to_bytes(buffer.pixels[image_width * row + col]);
-                Color color{rbyte, gbyte, bbyte, 255};
-                DrawPixel(col, row, color);
+                    color_to_bytes(buffer.get_pixel(y * image_width + x));
+                bytes.push_back(rbyte);
+                bytes.push_back(gbyte);
+                bytes.push_back(bbyte);
             }
         }
-        EndTextureMode();
+    }
 
-        // SDL_LockTexture(texture, NULL, &pixels_ptr, &pitch);
-        // for (size_t row = 0; row < image_height; row++) {
-        //     dst = (uint32_t *)((uint8_t *)pixels_ptr + row * (size_t)pitch);
-        //     for (size_t col = 0; col < image_width; col++) {
-        //         const auto [rbyte, gbyte, bbyte] =
-        //             color_to_bytes(buffer.pixels[image_width * row + col]);
-        //         if (buffer.sample_amount <= samples_per_pixel) {
-        //         }
-        //         *dst++ = SDL_MapRGBA(format, rbyte, gbyte, bbyte, 255);
-        //     }
-        // }
-        // SDL_UnlockTexture(texture);
+    void render_frame(const Hittable_list &world, Texture2D &texture) {
+        calculate_pixels(buffer, world);
+        UpdateTexture(texture, (void *)bytes.data());
+    }
+
+    void recalculate_camera() {
+        projection =
+            glm::perspectiveFov(glm::radians(vfov), (float)image_width,
+                                (float)image_height, nearClip, farClip);
+        inverseProjection = glm::inverse(projection);
+
+        view =
+            glm::lookAt(lookfrom, lookat + glm::vec3(0.0f, 0.0f, -1.0f), vup);
+        inverseView = glm::inverse(view);
+        rayDirections.resize(image_width * image_height);
+
+        for (size_t y = 0; y < image_height; y++) {
+            for (size_t x = 0; x < image_width; x++) {
+                glm::vec2 coord = {(float)x / (float)image_width,
+                                   (float)y / (float)image_height};
+                coord = coord * 2.0f - 1.0f;
+
+                glm::vec4 target =
+                    inverseProjection * glm::vec4(coord.x, coord.y, 1, 1);
+                glm::vec3 rayDirection = glm::vec3(
+                    inverseView *
+                    glm::vec4(glm::normalize(glm::vec3(target) / target.w), 0));
+                rayDirections[x + y * image_width] = rayDirection;
+            }
+        }
     }
 
     void init() {
         image_height = (size_t)((fpoint)image_width / (fpoint)aspect_ratio);
         image_height = (image_height < 1) ? 1 : image_height;
         buffer.init(image_width, image_height);
+        bytes.reserve(buffer.pixels.capacity() * 3);
 
-        center = lookfrom;
-        fpoint focal_length = (lookfrom - lookat).length();
-        fpoint theta = degrees_to_radians(vfov);
-        fpoint h = std::tan(theta / 2);
-        fpoint viewport_height = 2 * h * focal_length;
-        fpoint viewport_width =
-            viewport_height * (fpoint(image_width) / (fpoint)image_height);
-
-        w = normalize(lookfrom - lookat);
-        u = normalize(cross(vup, w));
-        v = cross(w, u);
-
-        vec3 viewport_u = viewport_width * u;
-        vec3 viewport_v = viewport_height * -v;
-        pixel_samples_scale = 1.0 / samples_per_pixel;
-
-        pixel_delta_u = viewport_u / (fpoint)image_width;
-        pixel_delta_v = viewport_v / (fpoint)image_height;
-
-        vec3 viewport_upleft =
-            center - (focal_length * w) - viewport_u / 2 - viewport_v / 2;
-        first_pixel = viewport_upleft + 0.5 * (pixel_delta_u + pixel_delta_v);
+        recalculate_camera();
     }
 
    private:
-    size_t image_height;
+    int image_height;
     fpoint vfov = 120;
-    double pixel_samples_scale;
-    point3 center;
-    point3 first_pixel;
-    vec3 pixel_delta_u;
-    vec3 pixel_delta_v;
-    vec3 u, v, w;
+    fpoint nearClip = 0.1f;
+    fpoint farClip = 100.0f;
+    glm::mat4 projection{1.0f};
+    glm::mat4 view{1.0f};
+    glm::mat4 inverseProjection{1.0f};
+    glm::mat4 inverseView{1.0f};
 
-    vec3 sample_square() const {
-        return vec3(random_fpoint() - 0.5, random_fpoint() - 0.5, 0);
+
+    glm::vec3 random_in_unit_sphere() const {
+        while (true) {
+            glm::vec3 p;
+            p.x = glm::linearRand(-1.0f, 1.0f);
+            p.y = glm::linearRand(-1.0f, 1.0f);
+            p.z = glm::linearRand(-1.0f, 1.0f);
+            if (glm::dot(p, p) < 1) {
+                return glm::normalize(p);
+            }
+        }
     }
 
-    my_Ray get_ray(size_t x, size_t y) const {
-        auto offset = sample_square();
-        auto pixel_sample = first_pixel +
-                            (((fpoint)x + offset.x()) * pixel_delta_u) +
-                            (((fpoint)y + offset.y()) * pixel_delta_v);
-        auto ray_origin = center;
-        auto ray_direction = pixel_sample - ray_origin;
-        return my_Ray(ray_origin, ray_direction);
+    glm::vec3 random_in_hemisphere(const glm::vec3 &normal) const {
+        glm::vec3 vec = random_in_unit_sphere();
+        if (glm::dot(vec, normal) > 0.0) {
+            return vec;
+        } 
+        return -vec;
     }
 
-    Col ray_color(const my_Ray &ray,
-                  int depth,
-                  const Hittable_list &world) const {
-        if (depth <= 0) {
-            return Col(0, 0, 0);
-        }
-        Hit_record rec;
-        if (world.hit(ray, Interval(0.001, infinity), rec)) {
-            vec3 direction = random_on_hemisphere(rec.normal);
-            return 0.5 * ray_color(my_Ray(rec.p, direction), depth - 1, world);
-        }
+    [[nodiscard]]
+    glm::vec3 ray_color(size_t x, size_t y, const Hittable_list &world) const {
+        my_Ray ray;
+        ray.orig = lookfrom;
+        ray.dir = rayDirections[y * image_width + x];
+        glm::vec3 color(0.0f);
+        glm::vec3 contrib(1.0f);
 
-        vec3 unit_dir = normalize(ray.direction());
-        fpoint a = 0.5 * (unit_dir.y() + 1.0);
-        return (1.0 - a) * Col(1.0, 1.0, 1.0) + a * Col(0.5, 0.7, 1.0);
+        for (int i = 0; i < max_depth; i++) {
+            Hit_record rec = world.hit(ray);
+            if (rec.distance < 0.0f) {
+                glm::vec3 skyColor = glm::vec3(0.5f, 0.7f, 0.9f);
+                color += skyColor * contrib;
+                break;
+            }
+
+            contrib *= world.objects[rec.index].color;
+
+            ray.orig = rec.hitPoint + rec.normal * 0.0001f;
+            ray.dir = glm::normalize(rec.normal + glm::sphericalRand(world.objects[rec.index].radius));
+        }
+        return color;
     }
 };
 

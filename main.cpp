@@ -4,90 +4,79 @@
 #include "raylib.h"
 #include "sphere.h"
 
-
 int main() {
+    constexpr size_t WIDTH = 800;
+    constexpr fpoint ASPECT_RATIO = 16.0f / 9.0f;
+
     Hittable_list world;
 
-    world.add(Sphere(point3(0, 0, -1.3), 0.51));
-    world.add(Sphere(point3(1, 0, -1.3), 0.51));
-    world.add(Sphere(point3(-2, 0, -1.5), 0.51));
-    world.add(Sphere(point3(2, 0, -1.5), 0.51));
-    world.add(Sphere(point3(1.4, -0.4, -0.8), 0.11));
-    world.add(Sphere(point3(-0.8, -0.4, -0.6), 0.11));
-    world.add(Sphere(point3(0, -100.5, -1), 100));
+    world.add(Sphere(glm::vec3(0.0f, 0.0f, -1.3f), 2.0f, {0.95f, 0.0f, 0.95f}));
+    world.add(Sphere(glm::vec3(-4.f, 0.0f, -1.5f), 2.0f, {0.9f, 0.9f, 0.0f}));
+    // world.add(Sphere(glm::vec3(0.0f, 0.0f, -2.1f), 0.51f, {0.8f, 0.1f, 0.1f}));
+    world.add(Sphere(glm::vec3(0, -102, -1), 100, {0.0f, 0.6f, 0.8f}));
 
     TracingCamera cam;
-    cam.max_depth = 8;
-    cam.aspect_ratio = 16.0 / 9.0;
-    cam.image_width = 1600;
+    cam.max_depth = 5;
+    cam.aspect_ratio = ASPECT_RATIO;
+    cam.image_width = WIDTH;
     cam.samples_per_pixel = 256;
-    cam.lookfrom = point3(-0.4, -0.35, 0);
-    cam.lookat = point3(0, 0, -0.9);
+    cam.lookfrom = glm::vec3(0, 0, 0);
+    cam.lookat = glm::vec3(0.0f, 0.0f, -1.f);
     cam.init();
 
     InitWindow(cam.image_width, cam.get_height(), "Rays");
     SetWindowMonitor(0);
     SetTargetFPS(60);
-    RenderTexture2D target =
-        LoadRenderTexture(cam.image_width, cam.get_height());
+    Image image = GenImageColor(cam.image_width, cam.get_height(), BLACK);
+    ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8);
+    Texture2D texture = LoadTextureFromImage(image);
 
     while (!WindowShouldClose()) {
         auto fps = GetFPS();
-        cam.render_frame(world, target);
+        if (IsKeyDown(KEY_W)) {
+            cam.lookfrom.z -= 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+        if (IsKeyDown(KEY_A)) {
+            cam.lookfrom.x -= 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+        if (IsKeyDown(KEY_S)) {
+            cam.lookfrom.z += 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+        if (IsKeyDown(KEY_D)) {
+            cam.lookfrom.x += 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+        if (IsKeyDown(KEY_Y)) {
+            cam.lookfrom.y += 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+        if (IsKeyDown(KEY_H)) {
+            cam.lookfrom.y -= 0.05f;
+            cam.recalculate_camera();
+            cam.buffer.reset();
+        }
+
+        cam.render_frame(world, texture);
         BeginDrawing();
         ClearBackground(RAYWHITE);
-        DrawTextureRec(target.texture, Rectangle{0, 0,
-                       float(target.texture.width),
-                       float(-target.texture.height)}, Vector2{0, 0}, WHITE);
-        DrawText(std::to_string(fps).c_str(), 100, 100, 24, RED);
+        DrawTextureRec(texture,
+                       Rectangle{0, 0, static_cast<float>(cam.image_width),
+                                 static_cast<float>(-cam.get_height())},
+                       Vector2{0, 0}, WHITE);
+        DrawText(std::to_string(fps).c_str(), 10, 10, 24, DARKGRAY);
+        DrawText(std::to_string(cam.buffer.sample_amount).c_str(), 10, 30, 24,
+                 DARKGRAY);
 
         EndDrawing();
     }
-    // if (SDL_Init(SDL_INIT_EVERYTHING)) {
-    //     std::clog << "Epic SDL fail!" << '\n';
-    //     return 1;
-    // }
-    // SDL_Window *window = SDL_CreateWindow(
-    //     "Rays", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-    //     (int)cam.image_width, (int)cam.get_height(), SDL_WINDOW_SHOWN);
-    //
-    // if (!window) {
-    //     std::clog << "Couldn't create a window. \n";
-    //     return 1;
-    // }
-    //
-    // SDL_Renderer *renderer =
-    //     SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-    // SDL_Texture *rayTexture = SDL_CreateTexture(
-    //     renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STREAMING,
-    //     (int)cam.image_width, (int)cam.get_height());
-    //
-    // if (!renderer) {
-    //     std::clog << "Couldn't create a renderer. \n";
-    //     return 1;
-    // }
-    //
-    // SDL_Event event;
-    // SDL_PixelFormat *format = SDL_AllocFormat(SDL_PIXELFORMAT_ARGB8888);
-    // bool quit = false;
-    // // main game loop
-    // while (!quit) {
-    //     while (SDL_PollEvent(&event)) {
-    //         switch (event.type) {
-    //             case SDL_QUIT:
-    //                 quit = true;
-    //                 break;
-    //         }
-    //     }
-    //     cam.render_frame(world, rayTexture, format);
-    //
-    //     SDL_RenderClear(renderer);
-    //     SDL_RenderCopy(renderer, rayTexture, NULL, NULL);
-    //     SDL_RenderPresent(renderer);
-    // }
-    //
-    // SDL_DestroyRenderer(renderer);
-    // SDL_Quit();
 
     return 0;
 }

@@ -3,24 +3,16 @@
 
 #include "interval.h"
 #include "ray.h"
+#include <glm/common.hpp>
+#include <glm/geometric.hpp>
 
 class Hit_record {
    public:
-    point3 p;
-    fpoint t;
-    vec3 normal;
-    bool front_face;
-    void set_face_normal(const my_Ray &r, const vec3 &outward_normal) {
-        // outward_normal is normalized
-        front_face = dot(r.direction(), outward_normal) < 0;
-        normal = front_face ? outward_normal : -outward_normal;
-    }
+    fpoint distance;
+    glm::vec3 hitPoint;
+    glm::vec3 normal;
+    int index;
 };
 
-class Hittable {
-   public:
-    virtual ~Hittable() = default;
-    virtual bool hit(const my_Ray &r, Interval ray_t, Hit_record &rec) const = 0;
-};
 
 #endif  // !HITTABLE_H

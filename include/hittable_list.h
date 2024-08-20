@@ -1,6 +1,9 @@
 #ifndef HITTABLE_LIST_H
 #define HITTABLE_LIST_H
 
+#include <glm/common.hpp>
+#include <glm/vec3.hpp>
+#include <limits>
 #include <memory>
 #include <vector>
 #include "hittable.h"
@@ -20,22 +23,56 @@ class Hittable_list {
 
     void add(Sphere object) { objects.push_back(object); }
 
-    bool hit(const my_Ray &ray, Interval ray_t, Hit_record &rec) const {
-        auto closest_so_far = ray_t.max;
-        bool hit_anything = false;
-        Hit_record temp_rec;
+    [[nodiscard]]
+    Hit_record hit(my_Ray &ray) const {
+        int closestSphere = -1;
+        fpoint distance = std::numeric_limits<float>::max();
+        for (size_t i = 0; i < objects.size(); i++) {
+            const Sphere &sphere = objects[i];
+            glm::vec3 origin = ray.orig - sphere.center;
 
-        for (const auto &object : objects) {
-            if (object.hit(ray, Interval(ray_t.min, closest_so_far),
-                           temp_rec)) {
-                rec = temp_rec;
-                closest_so_far = rec.t;
-                hit_anything = true;
+            fpoint a = glm::dot(ray.dir, ray.dir);
+            fpoint b = 2.0f * glm::dot(origin, ray.dir);
+            fpoint c = glm::dot(origin, origin) - sphere.radius * sphere.radius;
+
+            fpoint discriminant = b * b - 4.0f * a * c;
+            if (discriminant < 0.0f)
+                continue;
+
+            fpoint closestT = (-b - glm::sqrt(discriminant) / (2.0f * a));
+            if (closestT > 0.0f && closestT < distance) {
+                distance = closestT;
+                closestSphere = (int)i;
             }
         }
 
-        return hit_anything;
+        if (closestSphere < 0) {
+            return Miss();
+        }
+
+        return ClosestHit(ray, distance, closestSphere);
     };
+
+    Hit_record ClosestHit(const my_Ray &ray, fpoint distance, int index) const {
+        Hit_record rec;
+        rec.distance = distance;
+        rec.index = index;
+
+        const Sphere &closestSphere = objects[(size_t)index];
+
+        glm::vec3 origin = ray.orig - closestSphere.center;
+        rec.hitPoint = origin + ray.dir * distance;
+        rec.normal = glm::normalize(rec.hitPoint);
+        rec.hitPoint += closestSphere.center;
+
+        return rec;
+    }
+
+    Hit_record Miss() const {
+        Hit_record rec;
+        rec.distance = -1.0f;
+        return rec;
+    }
 };
 
 #endif  // !HITTABLE_LIST_H

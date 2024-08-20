@@ -1,21 +1,18 @@
 #ifndef RAY_H
 #define RAY_H
 
-#include "vec3.h"
+#include <glm/ext/vector_float3.hpp>
+#include "declarations.h"
 class my_Ray {
-   private:
-    point3 orig;
-    vec3 dir;
-
    public:
     my_Ray() {}
-    my_Ray(const point3 &origin, const vec3 &direction)
+    glm::vec3 orig;
+    glm::vec3 dir;
+    my_Ray(const glm::vec3 &origin, const glm::vec3 &direction)
         : orig(origin), dir(direction) {}
 
-    const point3 &origin() const;
-    const vec3 &direction() const;
 
-    point3 at(fpoint t) const;
+    glm::vec3 const at(fpoint t) const;
 };
 
 #endif  // !RAY_H
