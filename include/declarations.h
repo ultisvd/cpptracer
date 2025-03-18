@@ -11,6 +11,11 @@ const float infinity = std::numeric_limits<float>::infinity();
 const float pi = 3.1415926535897932385f;
 
 using color_bytes = std::tuple<uint8_t, uint8_t, uint8_t>;
+typedef struct Color {
+    unsigned char r;        // Color red value
+    unsigned char g;        // Color green value
+    unsigned char b;        // Color blue value
+} Color;
 
 inline color_bytes color_to_bytes(const glm::vec3 &color) {
     uint8_t rbyte = uint8_t(255.99 * color.r);

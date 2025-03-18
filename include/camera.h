@@ -2,13 +2,7 @@
 #define CAMERA_H
 
 
-typedef struct MyColor {
-    unsigned char r;        // Color red value
-    unsigned char g;        // Color green value
-    unsigned char b;        // Color blue value
-} MyColor;
 
-using Color = MyColor;
 #include "declarations.h"
 #include <sys/types.h>
 #include <algorithm>

@@ -59,14 +59,6 @@ int main() {
     bool is_running = true;
     SDL_SetWindowRelativeMouseMode(window, true);
 
-    // InitWindow((int)cam.image_width, (int)cam.get_height(), "Rays");
-    // SetWindowMonitor(0);
-    // SetTargetFPS(60);
-    // Image image =
-    //     GenImageColor((int)cam.image_width, (int)cam.get_height(), BLACK);
-    // ImageFormat(&image, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8);
-    // Texture2D texture = LoadTextureFromImage(image);
-
     while (is_running) {
         vec3 right_dir = glm::cross(cam.lookat, cam.vup);
         float cam_speed = 0.1f;
@@ -123,18 +115,6 @@ int main() {
                 cam.recalculate_camera();
                 cam.buffer.reset();
             }
-            // if (IsMouseButtonDown(MOUSE_BUTTON_RIGHT)) {
-            //     Vector2 mouseDelta = GetMouseDelta();
-            //     if (mouseDelta.x != 0.0f || mouseDelta.y != 0.0f) {
-            //         mouseDelta.x *= 0.03f;
-            //         mouseDelta.y *= 0.03f;
-            //         glm::quat q = glm::normalize(
-            //             glm::cross(glm::angleAxis(-mouseDelta.y, right_dir),
-            //                        glm::angleAxis(-mouseDelta.x, cam.vup)));
-            //         cam.lookat = glm::rotate(q, cam.lookat);
-            //         cam.recalculate_camera();
-            //         cam.buffer.reset();
-            //     }
         }
 
         cam.calculate_pixels(cam.buffer, world);
@@ -142,22 +122,6 @@ int main() {
         SDL_FlipSurface(render_surface, SDL_FLIP_VERTICAL);
         SDL_BlitSurface(render_surface, NULL, screen_surface, NULL);
         SDL_UpdateWindowSurface(window);
-        // BeginDrawing();
-        // ClearBackground(RAYWHITE);
-        // DrawTextureRec(texture,
-        //                Rectangle{0, 0, (float)((int)cam.image_width),
-        //                          (float)(-(int)cam.get_height())},
-        //                Vector2{0, 0}, WHITE);
-        // DrawText(std::to_string(fps).c_str(), 10, 10, 24, DARKGRAY);
-        // DrawText(std::to_string(cam.buffer.sample_amount).c_str(), 10, 30,
-        // 24,
-        //          DARKGRAY);
-        // DrawText(std::to_string(cam.lookfrom.x).c_str(), 10, 50, 24,
-        // DARKGRAY); DrawText(std::to_string(cam.lookfrom.y).c_str(), 10, 70,
-        // 24, DARKGRAY); DrawText(std::to_string(cam.lookfrom.z).c_str(), 10,
-        // 90, 24, DARKGRAY);
-        //
-        // EndDrawing();
     }
 
     return 0;

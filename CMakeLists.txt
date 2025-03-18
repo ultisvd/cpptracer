@@ -42,4 +42,3 @@ target_link_libraries(tracer glm::glm -flto)
 target_link_libraries(tracer tbb -flto)
 target_link_libraries(tracer SDL3::SDL3 -flto)
 
-

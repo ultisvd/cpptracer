@@ -1,8 +1,6 @@
 #include "camera.h"
 #include <glm/common.hpp>
 
-
-
 [[nodiscard]]
 size_t TracingCamera::get_height() const {
     return image_height;
@@ -51,7 +49,6 @@ void TracingCamera::calculate_pixels(pixel_buffer &buffer,
             byte_color.r = rbyte;
             byte_color.g = gbyte;
             byte_color.b = bbyte;
-            byte_color.a = 255;
             bytes[x + y * image_width] = byte_color;
         }
     }
