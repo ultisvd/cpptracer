@@ -1,11 +1,18 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <raylib.h>
+
+typedef struct MyColor {
+    unsigned char r;        // Color red value
+    unsigned char g;        // Color green value
+    unsigned char b;        // Color blue value
+} MyColor;
+
+using Color = MyColor;
+#include "declarations.h"
 #include <sys/types.h>
 #include <algorithm>
 #include <execution>
-#include "declarations.h"
 #include "hittable_list.h"
 #include "ray.h"
 #include "rtweekend.h"
@@ -53,7 +60,6 @@ class TracingCamera {
 
     void calculate_pixels(pixel_buffer &buffer, const Hittable_list &world);
 
-    void render_frame(const Hittable_list &world, Texture2D &texture);
 
     void recalculate_camera();
 
@@ -61,7 +67,7 @@ class TracingCamera {
 
    private:
     size_t image_height;
-    float vfov = 90;
+    float vfov = 45;
     float nearClip = 0.1f;
     float farClip = 100.0f;
     glm::mat4 projection{1.0f};

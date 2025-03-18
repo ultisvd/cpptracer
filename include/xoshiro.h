@@ -67,7 +67,7 @@ inline uint64_t xoshiro_next(void) {
 
     xoshiro_seed[3] = rotl(xoshiro_seed[3], 45);
 
-    return result >> 32;
+    return result;
 }
 
 

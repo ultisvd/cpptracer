@@ -1,6 +1,7 @@
 #ifndef DECLARATIONS_H
 #define DECLARATIONS_H
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <limits>
 #include <random>
 #include <glm/vec3.hpp>
